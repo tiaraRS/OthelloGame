@@ -1,223 +1,160 @@
+import pygame
+from othelo_game_logic import *
 import numpy as np
-import copy
 import math
-columns = {"A":0,"B":1,"C":2,"D":3,"E":4,"F":5,"G":6,"H":7}
-upper_limit = 7
-lower_limit = 0
 
-def get_player_value(state):
-    value = 1
-    if state.current_player == "MAX":
-        value = -1
-    return value
+pygame.init()
 
-def out_of_boundaries(pos):
-    return pos<0 or pos>7
+#colors used
+BLACK_COLOR = (0,0,0)
+WHITE_COLOR = (255,255,255)
+MINTCREAM_COLOR = (245, 255, 250)
+CADETBLUE_COLOR = (95, 158, 160)
+GAINSBORO_COLOR = (220, 220, 220)
 
-def not_out_of_limits(row, column):
-    return not out_of_boundaries(row) and not out_of_boundaries(column)
+#font
+FONT = pygame.font.Font('freesansbold.ttf', 32)
 
-def vertical_up_direction_update_function(row, column):
-    return row+1, column
+#game constants used
+SQUARE_WIDTH = 70
+GAME_BOARD_SIZE = 8
+RADIUS = 30
+CENTER_SQUARE_POSITION = RADIUS+5
+COLUMN_LABELS = {0:"A",1:"B",2:"C",3:"D",4:"E",5:"F",6:"G",7:"H"}
 
-def vertical_down_direction_update_function(row, column):
-    return row-1, column
+#screen configuration
+SCREEN_WIDTH = 700
+SCREEN_HEIGHT = 700
+GAME_SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-def horizontal_left_direction_update_function(row, column):
-    return row, column-1
+def show_column_labels():
+    x,y=SQUARE_WIDTH,0
+    for i in range(GAME_BOARD_SIZE):
+        text = FONT.render(COLUMN_LABELS[i], True, MINTCREAM_COLOR)
+        textRect = text.get_rect()
+        textRect.center = (x+(SQUARE_WIDTH // 2),y+(SQUARE_WIDTH // 2))
+        GAME_SCREEN.blit(text, textRect)
+        x+=SQUARE_WIDTH
 
-def horizontal_right_direction_update_function(row, column):
-    return row, column+1
+def show_row_labels():
+    x,y=0,SQUARE_WIDTH
+    for i in range(GAME_BOARD_SIZE):
+        text = FONT.render(str(i+1), True, MINTCREAM_COLOR)
+        textRect = text.get_rect()
+        textRect.center = (x+(SQUARE_WIDTH // 2),y+(SQUARE_WIDTH // 2))
+        GAME_SCREEN.blit(text, textRect)
+        y+=SQUARE_WIDTH
 
-def diagonal_ul_direction_update_function(row, column):
-    return row+1, column-1
+def draw_game_square(x,y):
+    pygame.draw.rect(GAME_SCREEN, CADETBLUE_COLOR, pygame.Rect(x, y, SQUARE_WIDTH, SQUARE_WIDTH)) #backgorund
+    pygame.draw.rect(GAME_SCREEN, MINTCREAM_COLOR, pygame.Rect(x, y, SQUARE_WIDTH, SQUARE_WIDTH),  2) #border
 
-def diagonal_ur_direction_update_function(row, column):
-    return row+1, column+1
+def draw_color_circle(x,y,color):
+    pygame.draw.circle(GAME_SCREEN, color, (x+CENTER_SQUARE_POSITION, y+CENTER_SQUARE_POSITION), RADIUS)
 
-def diagonal_dl_direction_update_function(row, column):
-    return row-1, column-1
+def draw_circle_piece(x,y, value):
+    if value == 1:     
+        draw_color_circle(x,y,WHITE_COLOR)             
+    elif value == -1:
+        draw_color_circle(x,y,BLACK_COLOR)   
+    elif value ==2:
+        pygame.draw.circle(GAME_SCREEN, GAINSBORO_COLOR, (x+CENTER_SQUARE_POSITION, y+CENTER_SQUARE_POSITION), RADIUS, 2)
 
-def diagonal_dr_direction_update_function(row, column):
-    return row-1, column+1
+def show_game_board(state): 
+    show_column_labels()
+    show_row_labels()
+    x=SQUARE_WIDTH
+    y=SQUARE_WIDTH
+    for row in state.game_board:
+        for column in row:
+          draw_game_square(x, y)
+          draw_circle_piece(x, y, column)
+          x += SQUARE_WIDTH             
+          pygame.display.flip()         
+        y += SQUARE_WIDTH
+        x = SQUARE_WIDTH        
 
-def flank(state, value, row, column, direction_update_function):
-    result_state = copy.deepcopy(state)
-    opposite_value = value*-1
-    successful_flanking = False
-    current_row, current_column = direction_update_function(row, column)
-    if not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == opposite_value:
-        while(not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == opposite_value):
-            result_state.game_board[current_row, current_column] = value
-            current_row, current_column = direction_update_function(current_row, current_column)
-        if not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == value: #flanqueo exitoso
-            successful_flanking = True
-        if successful_flanking:
-            result_state.game_board[row, column] = value
-            return result_state
-    return state
+def get_action_from_click(pos):
+    square_positions = [range(70,140),range(140,210),range(210,280),range(280,350),range(350,420),range(420,490),range(490,560),range(560,630)] 
+    posx, posy=-1,-1
+    x,y = pos[0],pos[1]
+    for i in range(len(square_positions)):
+        if x in square_positions[i]:
+            posx = i
+        if y in square_positions[i]:
+            posy = i
+        if posx>-1 and posy>-1:
+            break
+    if posx==-1 or posy==-1:
+        return None
+    action = COLUMN_LABELS[posx]+str(posy+1)
+    print(action)
+    return action
 
-def result(state, action):
-    result_state = copy.deepcopy(state)
-    column = columns[action[0]]
-    row = int(action[1])-1
-#     print("res", row, column)
-    value = get_player_value(state)    
-    
-#     result_state.game_board[current_row, current_column] = value
-    opposite_value = value*-1
-    
-    result_state = flank(result_state,value,row,column,vertical_down_direction_update_function)
-    result_state = flank(result_state,value,row,column,vertical_up_direction_update_function)
-    result_state = flank(result_state,value,row,column,horizontal_right_direction_update_function)
-    result_state = flank(result_state,value,row,column,horizontal_left_direction_update_function)
-    result_state = flank(result_state,value,row,column,diagonal_ul_direction_update_function)
-    result_state = flank(result_state,value,row,column,diagonal_ur_direction_update_function)
-    result_state = flank(result_state,value,row,column,diagonal_dl_direction_update_function)
-    result_state = flank(result_state,value,row,column,diagonal_dr_direction_update_function)
-#     result_state = move_vertical(result_state, value, current_row, current_column)
-#     result_state = move_horizontal(result_state, value, current_row, current_column)
-#     result_state = move_diagonal(result_state, value, current_row, current_column)   
-    return result_state
+def clean_possible_actions(game_state):
+    cleaned_game_state = copy.deepcopy(game_state)
+    pos_possible_actions_player = np.where(cleaned_game_state.game_board == 2)
+    cleaned_game_state.game_board[pos_possible_actions_player] = 0
+    return cleaned_game_state
 
+def capture_player_action(possible_moves):
+    print("possible_moves_player",possible_moves)
+    mouse_click = False
+    action=None
+    while not mouse_click and action==None:
+        events = pygame.event.get()  
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                mouse_position = pygame.mouse.get_pos()            
+                action = get_action_from_click(mouse_position)
+                if action!=None:
+                    mouse_click = True
+                if action not in possible_moves:
+                    mouse_click = False
+                    action=None
+    return action
 
-def change_player(state):
-     if state.current_player == "MAX":
-        return "MIN"
-     else:
-        return "MAX"
-
-def get_possible_move(state, value, row, column, direction_update_function):
-    result_state = copy.deepcopy(state)
-    opposite_value = value*-1
-    successful_flanking = False
-    current_row, current_column = direction_update_function(row, column)
-#     print(current_row, current_column)
-    if not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == opposite_value:
-        while(not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == opposite_value):
-#             print(current_row, current_column)
-            result_state.game_board[current_row, current_column] = value
-            current_row, current_column = direction_update_function(current_row, current_column)
-        if not_out_of_limits(current_row, current_column) and result_state.game_board[current_row, current_column] == 0: #flanqueo exitoso
-            successful_flanking = True
-#         if successful_flanking:
-#             result_state.game_board[row, column] = value
-#             return result_state
-    return successful_flanking, current_row, current_column
-
-
-moves = [vertical_down_direction_update_function,vertical_up_direction_update_function,horizontal_right_direction_update_function,horizontal_left_direction_update_function,diagonal_ul_direction_update_function,diagonal_ur_direction_update_function,diagonal_dl_direction_update_function,diagonal_dr_direction_update_function]
-def get_possible_actions(state, row, column, value, possible_actions_matrix):
-    possible_actions = copy.deepcopy(possible_actions_matrix)  
-    for move in moves:
-#         print(move)
-        success, possible_move_row, possible_move_column = get_possible_move(state,value,row,column,move)
-#         print(state.game_board)
-        if success:
-            possible_actions[possible_move_row, possible_move_column] = 2
-#             possible_actions.append([possible_move_row, possible_move_column])
-    return possible_actions
-
-map_values = {0:"A",1:"B",2:"C",3:"D",4:"E",5:"F",6:"G",7:"H"}
-def actions(state):
-    possible_actions_matrix= np.zeros(shape=(8,8), dtype=np.int32)     
-    value = get_player_value(state)
-    pos_values_player = np.where(state.game_board == value)  
-    pos_values_player = list(zip(pos_values_player[0],pos_values_player[1]))
-    possible_actions = []
-    for pos in pos_values_player: 
-        possible_actions_matrix = get_possible_actions(state, pos[0], pos[1], value, possible_actions_matrix)       
+def get_game_state_with_possible_actions(game_state):
+    game_state_with_possible_actions = copy.deepcopy(game_state)
+    possible_moves, possible_actions_matrix = actions(game_state_with_possible_actions)            
     pos_possible_actions_player = np.where(possible_actions_matrix == 2)
-    pos_possible_actions_player = list(zip(pos_possible_actions_player[0],pos_possible_actions_player[1]))
-    pos_possible_actions_player = list(map(lambda action: str(map_values[action[1]])+str(action[0]+1), pos_possible_actions_player))
-    return pos_possible_actions_player, possible_actions_matrix
+    game_state_with_possible_actions.game_board[pos_possible_actions_player] = 2
+    return game_state_with_possible_actions,possible_moves
 
-max_depth = 3
-def cut_off(state, depth):
-    return depth==max_depth
+def display_ending_message(game_state):
+    FONT_END = pygame.font.Font('freesansbold.ttf', 100)
+    text = FONT_END.render("END", True, MINTCREAM_COLOR, BLACK_COLOR)
+    textRect = text.get_rect()
+    textRect.center = (SCREEN_HEIGHT//2,SCREEN_WIDTH//2)    
+    GAME_SCREEN.blit(text, textRect)  
 
-def min_max_cutoff(state):
-#     print(state.game_board)
-    values = []
-    p, func_value, func_arg = player(state)
-#     print("player: ",p)
-#     state.current_player = p
-    state_actions, possible_actions_matrix = actions(state)
-#     acts = []
-#     print("state_actions",state_actions)
-    for action in state_actions:       
-#         for pos in action:
-#         print("*****************************")
-#         print("action min max",action)
-#             state = 
-        v = func_value(result(copy.deepcopy(state), action), -math.inf, math.inf,0)
-        values.append(v)
-#         acts.append(action)
-#         print("vvv=",v)
-#         state_actions = actions(state)
-    #np.func_arg(values)
-    idx = func_arg(values)
-    print("act",state_actions)
-    print(values)
-    print("idx", idx)
-    return state_actions[idx]
+    winner_font = pygame.font.Font('freesansbold.ttf', 30)
+    computer_points = len(np.where(game_state.game_board == -1))
+    player_points = len(np.where(game_state.game_board == 1))
+    points_text = winner_font.render(f"COMPUTER {computer_points}: | YOU: {player_points}", True, MINTCREAM_COLOR, BLACK_COLOR)
+    textRect_points = text.get_rect()
+    textRect_points.center = (SCREEN_HEIGHT//2.5,SCREEN_WIDTH-SCREEN_WIDTH//3)    
+    GAME_SCREEN.blit(text, textRect)  
+    GAME_SCREEN.blit(points_text, textRect_points)  
+    while 1:
+        pygame.display.flip() 
 
-# def terminal_test(state):
-#     if len(actions(state)) == 0:
-#         return True
-#     return False
-
-def heuristic(state):
-    heuristic = 0
-#     print(np.where(state.game_board == -1))
-    if state.current_player == "MAX":
-#         print(np.where(state.game_board == -1))
-        heuristic = len(np.where(state.game_board == -1)[0])
-    else:        
-        heuristic = len(np.where(state.game_board == 1)[0])*-1
-#     print("heuristic:", heuristic)
-    return heuristic
-
-def player(state):
-    if state.current_player == "MAX":
-        return ("MAX", min_value,np.argmax)
-    else:
-        return ("MIN", max_value, np.argmin)   
-
-def min_value(state, alpha, beta, depth):
-    state.current_player = "MIN"
-#     print("--------------min_value: depht = ", depth)
-    if cut_off(state, depth):
-        return heuristic(state)
-    v = math.inf
-#     print(state.game_board)
-    state_actions, possible_actions_matrix = actions(state)
-#     print("state_actions",state_actions)
-    for action in state_actions:
-#         for pos in a:
-#         print("action", action)
-        v = min(v, max_value(result(copy.deepcopy(state), action), alpha, beta, depth+1))
-        if v<=alpha:#prunning
-            return v
-        beta = min(beta, v)
-#     print("v = ",v)
-    return v
-
-def max_value(state, alpha, beta, depth):
-    state.current_player = "MAX"
-#     print("-----------max_value:depth = ", depth)
-    if cut_off(state, depth):
-        return heuristic(state)
-    v = -math.inf
-#     print(state.game_board)
-    state_actions = state_actions, possible_actions_matrix = actions(state)
-#     print("state_actions",state_actions)
-    for action in state_actions:
-#         for pos in a:
-#         print("action", action)
-        v = max(v, min_value(result(copy.deepcopy(state), action), alpha, beta, depth+1))
-        if v>= beta:
-            return v
-        alpha = max(alpha, v)
-#     print("v = ",v)
-    return v
+def play_game():
+    game_state = State()
+    possible_moves = actions(game_state)
+    while len(possible_moves) > 0: 
+        print("ini",game_state.current_player)    
+        game_state, possible_moves = get_game_state_with_possible_actions(game_state)    
+        show_game_board(game_state)
+        if len(possible_moves) == 0:
+            break
+        game_state = clean_possible_actions(game_state)
+        if game_state.current_player == "MAX":
+            action = min_max_cutoff(game_state)            
+        else:        
+            action = capture_player_action(possible_moves)
+        game_state = result(game_state,action)
+        game_state.current_player = change_player(game_state) 
+    display_ending_message(game_state)    
+        
+play_game()
