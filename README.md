@@ -6,7 +6,7 @@ Image shows average of ten moves, from which the final amount of pieces left on 
 2. Mobility
 Intent  of restricting the opponet's mobility and increasing one's own mobility
 Experiments with different depth
-![image](https://user-images.githubusercontent.com/88517671/161406637-c0ff8e13-c511-445c-8ab6-95dca88eddaf.png)
+![image](https://user-images.githubusercontent.com/88517671/161432080-f7ce1027-6fd6-4a66-b1c2-8b2c9472928d.png)
 The one that gives the best time
 average response is with one of 1
 
