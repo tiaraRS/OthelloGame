@@ -2,7 +2,7 @@ import pygame
 from othelo_game_logic import *
 import numpy as np
 import math
-import time
+
 pygame.init()
 
 #colors used
@@ -98,7 +98,7 @@ def clean_possible_actions(game_state):
     return cleaned_game_state
 
 def capture_player_action(possible_moves):
-    print("possible_moves_player",possible_moves)
+    #print("possible_moves_player",possible_moves)
     mouse_click = False
     action=None
     while not mouse_click and action==None:
@@ -129,6 +129,8 @@ def display_ending_message(game_state):
     GAME_SCREEN.blit(text, textRect)  
 
     winner_font = pygame.font.Font('freesansbold.ttf', 30)
+    print("end GAME computer",np.where(game_state.game_board == -1))
+    print("end GAME player",np.where(game_state.game_board == 1))
     computer_points = len(np.where(game_state.game_board == -1)[0])
     player_points = len(np.where(game_state.game_board == 1)[0])
     points_text = winner_font.render(f"COMPUTER {computer_points}: | YOU: {player_points}", True, MINTCREAM_COLOR, BLACK_COLOR)
@@ -138,28 +140,88 @@ def display_ending_message(game_state):
     GAME_SCREEN.blit(points_text, textRect_points)  
     while 1:
         pygame.display.flip() 
-
+import time
 def play_game():
     game_state = State()
+    average_general=[]
+    time_general=[]
+    for i in range(10):
+        expanded_states=0
+        game_state = State()
+        time_game = []
+        average_expanded_states_array = []
+        possible_moves_black = actions(game_state)[0]
+        possible_moves_white = actions(game_state)[0]
+        while len(possible_moves_black)>0 or len(possible_moves_white) > 0:  
+            game_state, possible_moves = get_game_state_with_possible_actions(game_state)
+            show_game_board(game_state)       
+            game_state = clean_possible_actions(game_state)
+            possible_moves_black,possible_moves_white = get_black_white_possible_moves(copy.deepcopy(game_state))
+    #         print("plater",game_state.current_player)
+            
+    #         print("possible_moves_black",possible_moves_black,"possible_moves_white",possible_moves_white)
+            if len(possible_moves_black) ==0 and len(possible_moves_white) == 0:
+                print("break")
+                print("possible_moves_black",possible_moves_black,"possible_moves_white",possible_moves_white)
+                break
+            if len(possible_moves)==0:
+                print("continue, current = ",game_state.current_player)   
+                game_state = clean_possible_actions(game_state)         
+                game_state.current_player = change_player(game_state)
+                possible_moves_black,possible_moves_white = get_black_white_possible_moves(copy.deepcopy(game_state))
+            else:
+                if game_state.current_player == "MAX":
+                    start = time.time()
+                    action,expanded = min_max_cutoff(game_state)   
+                    expanded_states+=expanded
+                    print("expanded_states",expanded_states) 
+                    average_expanded_states_array.append(expanded_states)
+                else:        
+        #             print("possible_moves",possible_moves)
+                    #action = input()
+                    action = capture_player_action(possible_moves)
+                game_state = result(game_state,action)
+                end = time.time()
+                time_game.append(end-start)
+                game_state.current_player = change_player(game_state)
+        print("possible_moves_black",possible_moves_black,"possible_moves_white",possible_moves_white)
+        print(game_state.game_board)
+        print("black", len(np.where(game_state.game_board == -1)[0]), "white",len(np.where(game_state.game_board == 1)[0]))
+        expanded_states=0
+        time_general.append(np.mean(time_game))
+        average_general.append(np.mean(average_expanded_states_array))
+        #display_ending_message(game_state)
+        
+    print("general", average_general)
+    print("times",time_general)
+    print("time average 5", np.mean(time_general))
+    print("average_5 times =",np.mean(average_general))
+"""game_state = State()
     possible_moves = actions(game_state)
+    expanded_states=0
+    
     while len(possible_moves) > 0: 
-        print("ini",game_state.current_player)  
-        start = time.time()  
+        print("ini",game_state.current_player)    
         game_state, possible_moves = get_game_state_with_possible_actions(game_state)    
         show_game_board(game_state)
         if len(possible_moves) == 0:
             break
         game_state = clean_possible_actions(game_state)
-        start = time.time()
         if game_state.current_player == "MAX":
-            action = min_max_cutoff(game_state)            
+            action,expanded = min_max_cutoff(game_state)   
+            expanded_states+=expanded
+            print("expanded_states",expanded_states)         
         else:        
             action = capture_player_action(possible_moves)
         game_state = result(game_state,action)
-        end = time.time()
-        print("TIME")
-        print(end-start)
         game_state.current_player = change_player(game_state) 
-    display_ending_message(game_state)    
-        
+    display_ending_message(game_state)  """  
+
+def get_black_white_possible_moves(state):
+    state.current_player="MAX"
+    possible_moves_black = actions(state)[0]
+    state.current_player="MIN"
+    possible_moves_white = actions(state)[0]
+    return possible_moves_black, possible_moves_white
+
 play_game()
