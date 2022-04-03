@@ -139,7 +139,6 @@ def heuristic(state):
     else:        
         heuristic = len(np.where(state.game_board == 1)[0])*-1
     return heuristic
-
 def player(state):
     if state.current_player == "MAX":
         return ("MAX", min_value,np.argmax)

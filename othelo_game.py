@@ -2,7 +2,7 @@ import pygame
 from othelo_game_logic import *
 import numpy as np
 import math
-
+import time
 pygame.init()
 
 #colors used
@@ -129,8 +129,8 @@ def display_ending_message(game_state):
     GAME_SCREEN.blit(text, textRect)  
 
     winner_font = pygame.font.Font('freesansbold.ttf', 30)
-    computer_points = len(np.where(game_state.game_board == -1))
-    player_points = len(np.where(game_state.game_board == 1))
+    computer_points = len(np.where(game_state.game_board == -1)[0])
+    player_points = len(np.where(game_state.game_board == 1)[0])
     points_text = winner_font.render(f"COMPUTER {computer_points}: | YOU: {player_points}", True, MINTCREAM_COLOR, BLACK_COLOR)
     textRect_points = text.get_rect()
     textRect_points.center = (SCREEN_HEIGHT//2.5,SCREEN_WIDTH-SCREEN_WIDTH//3)    
@@ -143,17 +143,22 @@ def play_game():
     game_state = State()
     possible_moves = actions(game_state)
     while len(possible_moves) > 0: 
-        print("ini",game_state.current_player)    
+        print("ini",game_state.current_player)  
+        start = time.time()  
         game_state, possible_moves = get_game_state_with_possible_actions(game_state)    
         show_game_board(game_state)
         if len(possible_moves) == 0:
             break
         game_state = clean_possible_actions(game_state)
+        start = time.time()
         if game_state.current_player == "MAX":
             action = min_max_cutoff(game_state)            
         else:        
             action = capture_player_action(possible_moves)
         game_state = result(game_state,action)
+        end = time.time()
+        print("TIME")
+        print(end-start)
         game_state.current_player = change_player(game_state) 
     display_ending_message(game_state)    
         
