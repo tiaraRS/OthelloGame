@@ -4,4 +4,5 @@ Heuristic Functions
 ![image](https://user-images.githubusercontent.com/88517671/161403698-26643435-96f0-4a32-9f0f-0a65b840ae31.png)
 Image shows average of ten moves, from which the final amount of pieces left on the board was obtained, from the human and the computer
 
+![image](https://user-images.githubusercontent.com/88517671/161406637-c0ff8e13-c511-445c-8ab6-95dca88eddaf.png)
 
