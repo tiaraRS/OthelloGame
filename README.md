@@ -8,8 +8,18 @@
 #### pygame --->pip install pygame
 To install open the cmd console (command prompt) or Anaconda(Prompt)
 ### 2. Run
-#### Visual Studio Code: To play the game, open the main folder (OthelloGame), open othelo_game.py file and run it. you should see the following window:
-#### Command Prompt: Open cmd in the main folder(OthelloGame) and execute othelo_game.py file.
+#### Visual Studio Code: To play the game, open the main folder (OthelloGame), open othelo_game.py file and run it.
+#### Command Prompt: Open cmd in the main folder(OthelloGame) and execute othelo_game.py file. 
+You should see the following window:
+![image](https://user-images.githubusercontent.com/74866417/161458696-b4ef1cd3-a141-40b4-b2af-6d245163b11f.png)
+
+That is it, you can play against the computer and have fun!
+
+A game preview:
+![image](https://user-images.githubusercontent.com/74866417/161459073-b8b09e5f-fe57-4cf7-9051-8e65256024bb.png)
+
+Here are the rules of the game and some strategies to play we also used to define our heuristics:
+https://sites.google.com/site/asothello/como-jugar#TOC-Reglas
 
 ## Heuristic Functions
 Heuristic #1: number of pieces 
@@ -40,19 +50,22 @@ We made experiments for our three heuristics, playing 10 times against the compu
 
 The following graph shows the summary of the experiments made in order to compare the average number of states and average time it took the computer to play, we normalized the number of expanded states to a 0-100 scale.
 
-##image1
+![image](https://user-images.githubusercontent.com/74866417/161458754-f7664ad9-b062-43b2-85de-106faebe80ff.png)
 
 As we can see in the graph, for the three first points(using min max algorithm without pruning), time and the number of expanded states do not seem to be related or follow a tendency, contrary to the last three points shown(using min max algorithm with pruning), in which time and the number of expanded states follow the same tendency. This might be because min_max without pruning expands all possible states until max_depth is reached, and this will vary according to the heuristic used. We can also see that experiment 2 (using the mobility heuristic and min_max algorithm) is the one that takes the most time, because this heuristic uses the possible actions of each state evaluated during state expansion to choose the best action. Getting all the possible actions for a state increases the time, this is why even though not so many states are expanded, time is really high. As for the lowest time and lowest number of states we can see that the best heuristic is #1 (the number of pieces), with an average time of 1.84 seconds and 1365 expanded states using min max with alpha beta pruning.
 
 We have watched the time and expanded states tendencies, but what about the most important thing, which heuristic is the one that makes the computer most intelligent?
 Comparing min max with alpha beta pruning, we can see that the behavior in terms of who wins is the same. With heuristic#1, the computer won 10 and 40% of the games played. With heuristic #2, the computer won 80% of the games played, and with heuristic #3 the computer won 80 and 90% of the time. In terms of winning, heuristic#3 seems to be the best. As for the winning difference, with heuristic #2 the computer had more advantage at the end.
+![image](https://user-images.githubusercontent.com/74866417/161458787-00609bf3-47c5-4950-9fba-7b634a7d60c4.png)
+![image](https://user-images.githubusercontent.com/74866417/161458799-6950b70e-73dd-4f4f-85b9-9235a44addbd.png)
+![image](https://user-images.githubusercontent.com/74866417/161458809-e4e11331-db0e-473c-aa28-ba58799b4f85.png)
 
-##image
-##image
 
 Now we will focus on the average number of states. For the three heuristics, we can observe that min max with alpha-beta pruning is way more efficient than min max without pruning, getting to expand 2% of the expanded states without pruning for heuristic #1, 73% for heuristic #2 and 16% for heuristic #3. This proves that min max is no comparison to alpha-beta pruning.
 
-#image
+![image](https://user-images.githubusercontent.com/74866417/161458818-0ad3ce98-c875-4d1b-91d3-ed4ac79605fe.png)
 
 Taking all these characteristics into account, we selected heuristic #3, max_depth = 3 with min max with apha-beta pruning as the best parameters for the game to be played. Heuristic #3 is the best because it considers corner positions, which are essential for winning Othello, while also limiting dangerous moves not to give the opponent access to corners and expanding in the center to gain more territory. Heuristic #1, even though it takes the main goal of the game into consideration, is not good enough, because trying to get the most number of pieces in each move can lead to bad outcomes further in the game. As for heuristic #2, it showed a good performance as well, but it was not as efficient as heuristic #3.
+
+
 
