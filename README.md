@@ -25,14 +25,14 @@ Here are the rules of the game and some strategies to play we also used to defin
 https://sites.google.com/site/asothello/como-jugar#TOC-Reglas
 
 ## Heuristic Functions
-Heuristic #1: number of pieces 
+**Heuristic #1**: number of pieces 
 This heuristic represents the goal of the game which is to get the most quantity of pieces from your color. 
 
-Heuristic #2: mobility
+**Heuristic #2**: mobility
 This heuristic represents the number of possible moves a player can perform. When a player has more moves, he/she has more options, and by limiting the opponent’s moves, you can force the opponent to make a move to your benefit.
 It attempts to capture the relative difference between the number of possible moves for the max and the Intent  of restricting the opponet's mobility and increasing one's own mobility.
 
-Heuristic #3:
+**Heuristic #3:**
 This heuristic takes into account some strategies we read about, having to do with the game_board positions. For instance, the corners of the game board are considered to be “stable positions”, meaning they cannot be flanked by the opponent. Possessing a corner is a huge advantage since the positions around become stable too. As you gain more stable pieces, you guarantee them to be safe. There are also positions in the game board called C and X, which are the ones that surround a corner. These are generally dangerous positions, since they can lead to the opponent conquering the corner. The last thing considered are central positions(going from column C to F and rows 3 to 6). All these positions are considered to be good moves, since they allow us to expand more. 
 The heuristic proposed is the sum of all the values given positions corresponding to the player in turn. Values given are calculated from the game board position they are at. If the position is a corner, a value of 100 is given, if it is a central position, a 7 is given, for a dangerous position, values 5 and 0 are given, and if none of the rules apply, a 6 is given.
 
