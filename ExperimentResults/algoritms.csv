@@ -1,0 +1,3 @@
+algorithm;number of pieces;mobility;smart position
+min max cutoff;45686;27472;59680
+alpha-beta pruning;1365;20137;9745

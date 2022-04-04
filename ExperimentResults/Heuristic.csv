@@ -1,0 +1,7 @@
+iterations;heuristic;max_depth;algorithm;average_expanded_states;average_time;norm_expanded_states;norm_average_time
+10;1 number of pieces;3;min_max_cutoff;45686;4.31;76,55160858;13,46875
+10;2 mobility;3;min_max_cutoff;27472;32;46,03217158;100
+10;3 smart position;3;min_max_cutoff;59680;5.94;100;18,5625
+10;1 number of pieces;3;alpha_beta_pruning_cutoff;1365;1.84;2,287198391;5,75
+10;2 mobility;3;alpha_beta_pruning_cutoff;20137;10.61;33,74162198;33,15625
+10;3 smart position;3;alpha_beta_pruning_cutoff;9745;2.6;16,32875335;8,125

@@ -1,0 +1,4 @@
+min max cutoff;number of pieces;mobiility;smart position
+computer;4;8;9
+human;6;2;0
+tie;0;0;1
