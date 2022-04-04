@@ -10,6 +10,9 @@ To install open the cmd console (command prompt) or Anaconda(Prompt)
 ### 2. Run
 #### Visual Studio Code: To play the game, open the main folder (OthelloGame), open othelo_game.py file and run it.
 #### Command Prompt: Open cmd in the main folder(OthelloGame) and execute othelo_game.py file. 
+### To have the file with the game you must clone the repository 
+   With the command: git clone https://github.com/tiaraRS/OthelloGame.git
+### Or also download the file as zip
 You should see the following window:
 ![image](https://user-images.githubusercontent.com/74866417/161458696-b4ef1cd3-a141-40b4-b2af-6d245163b11f.png)
 
@@ -37,13 +40,16 @@ The heuristic proposed is the sum of all the values given positions correspondin
 ## Experiments:
 
 ## Depth Parameter:
+To experiment with different depths, heuristics 1 and 3 were used.
 ## Experiments with different depths: 1, 3, 4, 5
 ![image](https://user-images.githubusercontent.com/88517671/161454582-62fc2dab-ec87-40ba-8f23-c9af6508b41a.png)
-##### Image shows different depths with the amount of pieces heuristic
+##### Image shows different depths with the number of pieces heuristic
 With the experiments carried out, it was determined that a good depth is 3 because the time it takes is less than good, being less than 2 seconds. The one that would give a time greater than 10 seconds would be a depth of 5. The lowest would be a depth of 1, followed by a depth of 3 and then 4.Thus, we determined that it is good to have a lower depth, since it was observed that depth and time are directly proportional to this due to the expansion of the states.
-##### Image shows different depths with the corner value heuristic
+![image](https://user-images.githubusercontent.com/88517671/161459478-f60c4a79-9837-40f9-b9a9-429e728f6204.png)
+##### Image shows different depths with the smart position heuristic
+As in the previous case, it was shown that with a greater depth, time increases, which tells us that depth is directly related to time.With a depth of 5 the time exceeds 10 seconds, this time becomes larger than the time obtained with heuristic 1 with a depth of 5.The same with the other depths that although they have values in relation to what was said about the directly proportional relationship between those parameters, they are greater than those obtained with heuristic 1. With depths 3 and 4, times within the requirement of less than 10 seconds were obtained.
 
-
+With the experiments carried out, it was determined that the best depth is 3
 ## Comparing Heuristics with the 2 algorithms (MinMaxCutOff and MinMaxCutoff with Alpha-Beta Pruning)
 
 We made experiments for our three heuristics, playing 10 times against the computer with a max_depth of 3, testing both algorithms (min max cutoff without pruning and min max cutoff with alpha-beta pruning), and obtained the average of expanded states in a play, the average time it took the computer to respond, the number of times the computer and human won, or tied, the average difference of pieces of the winner and loser, to analyze the behavior of the algorithms and compare the heuristics chosen.
