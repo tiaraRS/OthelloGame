@@ -105,6 +105,7 @@ def get_possible_actions(state, row, column, value, possible_actions_matrix):
     return possible_actions
 
 COLUMN_LABELS = {0:"A",1:"B",2:"C",3:"D",4:"E",5:"F",6:"G",7:"H"}
+
 def actions(state):
     possible_actions_matrix= np.zeros(shape=(8,8), dtype=np.int32)     
     value = get_player_value(state)
@@ -121,74 +122,21 @@ def actions(state):
 max_depth = 3
 def cut_off(state, depth):
     return depth==max_depth
-def heuristic_mobility(state):
-    heuristic = 0
-    result_state = copy.deepcopy(state)
-    #print( result_state.current_player) 
-    max_moves,matrix_max=actions( result_state)
-    possible_moves_max = len(max_moves)
-    #print(possible_moves_max) 
-    state.current_player = "MIN"
-    #print( result_state.current_player)        
-    min_moves,matrix_min=actions( result_state)
-    possible_moves_min = len(min_moves)
-    #print(possible_moves_min) 
-    if possible_moves_max + possible_moves_min != 0:
-        heuristic=100*(possible_moves_max-possible_moves_min)/(possible_moves_max+possible_moves_min)
-    else: 
-        heuristic=0
-    return heuristic
-def heuristic(state):
-    heuristic = 0
-    if state.current_player == "MAX":
-        #print("heuristic max")
-        heuristic = len(np.where(state.game_board == -1)[0])
-    else:     
-        #print("heuristic min")  
-        heuristic = len(np.where(state.game_board == 1)[0])*-1
-    return heuristic
 
 def player(state):
     if state.current_player == "MAX":
         return ("MAX", min_value,np.argmax)
     else:
         return ("MIN", max_value, np.argmin)   
-###def min_value(state, alpha, beta, depth):
-    state.current_player = "MIN"
-    if cut_off(state, depth):
-        return heuristic(state)
-    v = math.inf
-    state_actions, possible_actions_matrix = actions(state)
-    for action in state_actions:
-        v = min(v, max_value(result(copy.deepcopy(state), action), alpha, beta, depth+1))
-        if v<=alpha:#prunning
-            return v
-        beta = min(beta, v)
-    return v
-###
-###def max_value(state, alpha, beta, depth):
-    state.current_player = "MAX"
-    if cut_off(state, depth):
-        return heuristic(state)
-    v = -math.inf
-    state_actions = state_actions, possible_actions_matrix = actions(state)
-    for action in state_actions:
-        v = max(v, min_value(result(copy.deepcopy(state), action), alpha, beta, depth+1))
-        if v>= beta:
-            return v
-        alpha = max(alpha, v)
-    return v
-###
 
+
+# MIN MAX CUTOFF WITH ALPHA-BETA PRUNING
 def min_max_cutoff(state):
-    #print("state,",state.game_board)
     values = []
     p, func_value, func_arg = player(state)
     expanded_states=0   
     state_actions, possible_actions_matrix = actions(state)
-    #print("------------ MIN MAX CUTOFF STATE actions = ", state_actions)
     for action in state_actions: 
-        #print("action expanded min max",action,"depth", 0)
         expanded_states+=1      
         v,expanded = func_value(result(copy.deepcopy(state), action),-math.inf,math.inf,0,0)
         expanded_states+=expanded
@@ -199,48 +147,102 @@ def min_max_cutoff(state):
 def min_value(state, alpha, beta,depth, expanded_states):
     state.current_player = "MIN"
     if cut_off(state, depth):
-        #print("cut off min")
-        #return (heuristic(state), expanded_states)
-        return (heuristic_mobility(state),expanded_states)
+        return (heuristic(state), expanded_states)
     v = math.inf
     state_actions, possible_actions_matrix = actions(state)
-    #print("------------ MIN STATE actions = ", state_actions)
-    for action in state_actions:
-        #print("action expanded min",action,"depth = ", depth)        
+    for action in state_actions:    
         v,expanded = max_value(result(copy.deepcopy(state), action),alpha, beta,depth+1,0)
         expanded_states+=expanded
         if v<=alpha:#prunning            
-            #print("pruning",v,"<=",alpha)
-            #print("action = ",action)
             return (v,expanded_states)     
         expanded_states+=1
-        beta = min(beta, v)               
-    #print("expanded_states: min",expanded_states)        
+        beta = min(beta, v)                      
     return (v,expanded_states)
 
 def max_value(state, alpha, beta,depth, expanded_states):
     state.current_player = "MAX"    
     if cut_off(state, depth):
-        #print("cut off max")
-        #return (heuristic(state), expanded_states)
-        return (heuristic_mobility(state),expanded_states)
+        return (heuristic(state), expanded_states)
     v = -math.inf
     state_actions = state_actions, possible_actions_matrix = actions(state)
-    #print("-----------MAX STATE actions = ", state_actions)
-    for action in state_actions:
-        #print("action expanded max",action,"depth = ", depth)       
+    for action in state_actions:     
         v, expanded = min_value(result(copy.deepcopy(state), action), alpha, beta,depth+1, 0)
         expanded_states+=expanded
         if v>= beta:
-            #print("pruning",v,">=",beta)
-            #print("action = ",action)
             return (v,expanded_states)
         expanded_states+=1
-        alpha = max(alpha, v)       
-    #print("expanded_states: ",expanded_states)        
+        alpha = max(alpha, v)              
     return (v,expanded_states)
  
+class State:
+    def __init__(self):
+        self.game_board = self.intial_game_board()
+        self.current_player = "MAX"
+        
+    def intial_game_board(self):
+        initial_state = np.zeros(shape=(8,8), dtype=np.int32)        
+        initial_state[3,3] = 1
+        initial_state[4,3] = -1
+        initial_state[3,4] = -1
+        initial_state[4,4] = 1
+        return initial_state
+
+
+def get_position_value(action): 
+    if action in ["A1","H1","H8","A8"]:
+        return 100
+    if action in ["A2","B1","G1","H2","H7","G8","A7","B8"]:
+        return 5
+    if action in ["B2","G2","G7","B7"]:
+        return 0
+    if action in ["C3","C4","C5","C6","D3","D4","D5","D6","E3","E4","E5","E6","F3","F4","F5","F6"]:
+        return 7
+    return 6
+
+def corner_value(state):
+    value = get_player_value(state)
+    pos_player_values = np.where(state.game_board == value)
+    pos_player_values = list(zip(pos_player_values[0],pos_player_values[1]))
+    pos_player_values = list(map(lambda action: str(COLUMN_LABELS[action[1]])+str(action[0]+1), pos_player_values))  
+    return sum(list(map(lambda player_action: get_position_value(player_action), pos_player_values)))
+
+
+# HEURISTIC #3: SMART POSITION
+def heuristic(state):
+    heuristic = corner_value(state)
+    if state.current_player == "MIN":
+        heuristic = heuristic*-1
+    return heuristic
+
 """
+# HEURISTIC #1: NUMBER OF PIECES
+def heuristic(state):
+    heuristic = 0
+    if state.current_player == "MAX":
+        heuristic = len(np.where(state.game_board == -1)[0])
+    else:     
+        heuristic = len(np.where(state.game_board == 1)[0])*-1
+    return heuristic
+
+
+# HEURISTIC #2: MOBILITY
+def heuristic(state):
+    heuristic = 0
+    result_state = copy.deepcopy(state) 
+    max_moves,matrix_max=actions( result_state)
+    possible_moves_max = len(max_moves)
+    result_state.current_player = "MIN"       
+    min_moves,matrix_min=actions( result_state)
+    possible_moves_min = len(min_moves)
+    if possible_moves_max + possible_moves_min != 0:
+        heuristic=100*(possible_moves_max-possible_moves_min)/(possible_moves_max+possible_moves_min)
+    else: 
+        heuristic=0
+    return heuristic
+"""
+
+"""
+# CODE TO TEST MIN MAX CUTOFF WITHOUT PRUNING
 def min_value(state, depth, expanded_states):
     state.current_player = "MIN"
     if cut_off(state, depth):
@@ -290,48 +292,4 @@ def min_max_cutoff(state):
         values.append(v)
     idx = func_arg(values)
     return state_actions[idx],expanded_states
-"""
-class State:
-    def __init__(self):
-        self.game_board = self.intial_game_board()
-        self.current_player = "MAX"
-        
-    def intial_game_board(self):
-        initial_state = np.zeros(shape=(8,8), dtype=np.int32)        
-        initial_state[3,3] = 1
-        initial_state[4,3] = -1
-        initial_state[3,4] = -1
-        initial_state[4,4] = 1
-        return initial_state
-
-"""
-def get_corner_value(action): 
-    if action in ["A1","H1","H8","A8"]:
-        return 100
-    if action in ["A2","B1","G1","H2","H7","G8","A7","B8"]:
-        return 5
-    if action in ["B2","G2","G7","B7"]:
-        return 0
-    if action in ["C3","C4","C5","C6","D3","D4","D5","D6","E3","E4","E5","E6","F3","F4","F5","F6"]:
-        return 7
-    return 6
-
-def corner_value(state):
-#     print(state.game_board)
-    value = get_player_value(state)
-    pos_player_values = np.where(state.game_board == value)
-    pos_player_values = list(zip(pos_player_values[0],pos_player_values[1]))
-    pos_player_values = list(map(lambda action: str(COLUMN_LABELS[action[1]])+str(action[0]+1), pos_player_values))  
-#     print(pos_player_values)
-    for pos in pos_player_values:
-        if pos in ["A1","H1","H8","A8"]:
-            return 10000
-    return sum(list(map(lambda player_action: get_corner_value(player_action), pos_player_values)))
-
-
-def heuristic(state):
-    heuristic = corner_value(state)
-    if state.current_player == "MIN":
-        heuristic = heuristic*-1
-    return heuristic
 """
